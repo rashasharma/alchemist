@@ -1,13 +1,14 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from model.recommender import get_recommendations
+from flask import Flask, jsonify, request, render_template
 
 app = Flask(__name__)
 CORS(app)
 
 @app.route('/')
 def home():
-    return "<h1> Alchemist API is Running!</h1><p>Go to /api/recommend?perfume=Eros to test it.</p>"
+    return render_template('index.html')
 
 @app.route('/api/recommend', methods=['GET'])
 def api_recommend():
