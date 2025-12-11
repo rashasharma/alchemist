@@ -26,7 +26,8 @@ def api_recommend():
     for row in raw_results:
         formatted_results.append({
             "name": row[0],
-            "brand": row[1]
+            "brand": row[1],
+            "image": row[2]
         })
     
     return jsonify({
