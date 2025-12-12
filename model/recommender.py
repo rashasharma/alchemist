@@ -11,12 +11,8 @@ except FileNotFoundError:
 print(f" Data Loaded. Total Rows: {len(df)}")
 
 print(" Building Vector Matrix...")
-vectorizer = TfidfVectorizer(stop_words='english')
-matrix = vectorizer.fit_transform(df['Notes'].fillna(''))
-print(" Calculating Similarity (This might take 10-20 seconds)...")
-cosine_sim = linear_kernel(matrix, matrix)
-
-print(" Math Complete. The AI is ready.")
+vectorizer = TfidfVectorizer(stop_words='english',min_df=2)
+tfdif_matrix = vectorizer.fit_transform(df['Notes'].fillna(''))
 
 def get_recommendations(perfume_name, top_n=5):
     mask = df['Name'].str.contains(perfume_name, case=False, na=False) | \
@@ -27,19 +23,12 @@ def get_recommendations(perfume_name, top_n=5):
     if matches.empty:
         return [f"Error: Perfume '{perfume_name}' not found."]
     idx = matches.index[0]
+    target_vector=tfdif_matrix[idx]
+    cosine_scores=linear_kernel(target_vector,tfdif_matrix).flatten()
 
-    sim_scores = list(enumerate(cosine_sim[idx]))
+    sim_scores = list(enumerate(cosine_scores))
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
     sim_scores = sim_scores[1:top_n+1]
     
     perfume_indices = [i[0] for i in sim_scores]
     return df[['Name', 'Brand', 'Image_URL']].iloc[perfume_indices].values.tolist()
-
-if __name__ == "__main__":
-    test_perfume = "Musky" 
-    print(f"\n Testing Recommendations for '{test_perfume}':")
-    
-    results = get_recommendations(test_perfume)
-    
-    for res in results:
-        print(f"- {res[0]} (by {res[1]})")
