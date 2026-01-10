@@ -32,7 +32,7 @@ df['Brand'] = df['url'].apply(get_brand)
 print("Cleaning Names...")
 df['Name_Clean'] = df.apply(clean_name, axis=1)
 
-df['Notes'] = df['Main Accords'].fillna('') + " " + df['Description'].fillna('')
+df['Notes'] = (df['Main Accords'].fillna('') + " ") * 3 + df['Description'].fillna('')
 
 final_df = df[['Name_Clean', 'Brand', 'Notes', 'url']]
 final_df.columns = ['Name', 'Brand', 'Notes', 'Image_URL'] 
