@@ -3,119 +3,896 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alchemist | Fragrance Finder</title>
+    <meta name="description" content="Alchemist - An advanced scent recommendation engine using natural language search, TF-IDF mapping, and popularity-weighted scoring to find your signature fragrance.">
+    <title>Alchemist | Premium Fragrance Recommendation Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Lato', sans-serif; }
-        h1, h2, h3 { font-family: 'Playfair Display', serif; }
-        .glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background-color: #05060b;
         }
+        h1, h2, h3 { 
+            font-family: 'Playfair Display', serif; 
+        }
+        
+        /* Glassmorphism & premium laboratory styles */
+        .glass-card {
+            background: rgba(10, 15, 30, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(245, 158, 11, 0.08);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.7);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .glass-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(245, 158, 11, 0.35);
+            box-shadow: 0 15px 45px -5px rgba(245, 158, 11, 0.06), 0 10px 40px -10px rgba(0, 0, 0, 0.8);
+        }
+        
+        .glowing-bg {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.05) 0%, rgba(0,0,0,0) 70%);
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #05060b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d97706;
+        }
+
+        /* Micro-animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fade-in {
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-50 min-h-screen flex flex-col items-center">
+<body class="text-slate-200 min-h-screen flex flex-col items-center overflow-x-hidden relative">
 
-    <div class="text-center mt-20 mb-10 px-4">
-        <p class="text-amber-400 tracking-[0.2em] text-sm uppercase mb-2">The Science of Scent</p>
-        <h1 class="text-5xl md:text-7xl font-bold mb-4 bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent">
-            Alchemist
-        </h1>
-        <p class="text-slate-400 max-w-lg mx-auto text-lg">
-            Discover your next signature scent. 
-            Enter a perfume you love, and we'll calculate the best match.
-        </p>
-    </div>
+    <!-- Ambient glowing backgrounds simulating alchemical heat -->
+    <div class="glowing-bg top-[-200px] left-[-150px]"></div>
+    <div class="glowing-bg bottom-[-200px] right-[-150px]"></div>
 
-    <div class="w-full max-w-xl px-4 relative">
-        <div class="flex shadow-2xl rounded-full overflow-hidden border border-slate-700 bg-slate-800">
-            <input 
-                type="text" 
-                id="perfumeInput"
-                placeholder="Ex: YSL Black Opium..." 
-                class="w-full px-6 py-4 bg-slate-800 text-white focus:outline-none placeholder-slate-500"
-                onkeypress="handleEnter(event)"
+    <!-- Header Navigation -->
+    <header class="w-full max-w-6xl px-6 py-6 flex justify-between items-center z-10">
+        <a href="/" class="flex items-center space-x-2">
+            <span class="text-2xl font-bold bg-gradient-to-r from-amber-300 via-amber-500 to-yellow-600 bg-clip-text text-transparent uppercase tracking-[0.2em]">
+                Alchemist
+            </span>
+        </a>
+        <div class="text-xs text-slate-500 font-mono tracking-widest border border-slate-800 bg-slate-900/50 px-3 py-1.5 rounded-full uppercase">
+            v2.0 // Active Scent Analysis
+        </div>
+    </header>
+
+    <!-- Hero / Title -->
+    <main class="w-full max-w-6xl flex-1 flex flex-col items-center z-10 px-4 md:px-6">
+        <section class="text-center mt-12 mb-10 max-w-2xl animate-fade-in">
+            <p class="text-amber-400 tracking-[0.3em] text-xs font-semibold uppercase mb-3">The Science & Art of Perfumery</p>
+            <h1 class="text-4xl md:text-6xl font-bold tracking-tight mb-5 leading-tight">
+                Discover Your <br>
+                <span class="bg-gradient-to-r from-amber-100 via-amber-300 to-amber-500 bg-clip-text text-transparent">
+                    Signature Scent DNA
+                </span>
+            </h1>
+            <p class="text-slate-400 text-base md:text-lg leading-relaxed font-light">
+                Enter a perfume you adore or raw ingredients you love. Our multi-dimensional recommendation engine uses token intersection and popularity scores to calculate your matches.
+            </p>
+        </section>
+
+        <!-- Search Area -->
+        <section class="w-full max-w-2xl px-2 relative z-20 animate-fade-in delay-100">
+            <div class="flex flex-col md:flex-row shadow-3xl rounded-2xl md:rounded-full overflow-hidden border border-amber-500/25 bg-slate-950/80 backdrop-blur-xl p-2 space-y-2 md:space-y-0">
+                <div class="flex-1 flex items-center px-4 relative">
+                    <svg class="w-5 h-5 text-slate-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input 
+                        type="text" 
+                        id="perfumeInput"
+                        placeholder="Search ex: YSL Black Opium, Sauvage, Jasmine..." 
+                        class="w-full py-3 bg-transparent text-white focus:outline-none placeholder-slate-600 text-base"
+                        autocomplete="off"
+                        onkeypress="handleEnter(event)"
+                    >
+                </div>
+                <button 
+                    onclick="getRecommendations()"
+                    id="searchBtn"
+                    class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold px-8 py-3.5 rounded-xl md:rounded-full transition-all tracking-wider text-sm uppercase shrink-0 active:scale-95 shadow-lg shadow-amber-500/10"
+                >
+                    Analyze Scent
+                </button>
+            </div>
+            
+            <!-- Real-time suggestions dropdown -->
+            <div 
+                id="suggestions" 
+                class="absolute left-2 right-2 mt-2 bg-slate-950/95 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden hidden max-h-72 overflow-y-auto backdrop-blur-2xl z-50 glass-card"
             >
-            <button 
-                onclick="getRecommendations()"
-                class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-8 transition-colors"
-            >
-                ANALYZE
+            </div>
+            
+            <p id="status" class="text-center text-slate-500 mt-4 text-xs font-mono min-h-[16px]"></p>
+        </section>
+
+        <!-- Disambiguation / Multi-match Candidates Panel -->
+        <section id="disambiguationArea" class="w-full max-w-2xl px-4 mt-6 hidden animate-fade-in delay-200">
+            <div class="bg-slate-950/50 border border-amber-500/10 rounded-2xl p-5 text-center backdrop-blur-md">
+                <span class="text-xs text-amber-500 uppercase tracking-widest block mb-3 font-mono">Multiple Matches Found</span>
+                <p class="text-xs text-slate-400 mb-4">We found multiple bottles matching your search. Did you mean one of these?</p>
+                <div id="candidatesList" class="flex flex-wrap justify-center gap-2 max-h-40 overflow-y-auto p-1">
+                    <!-- Dynamic pills generated here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Dynamic Content Area -->
+        <div class="w-full mt-10 mb-24 z-10">
+            
+            <!-- Source Perfume Seed (Search Transparency) -->
+            <section id="seedArea" class="w-full max-w-3xl mx-auto px-4 mb-10 hidden animate-fade-in">
+                <!-- Dynamically generated Seed Card -->
+            </section>
+
+            <!-- Interactive Filters bar -->
+            <section id="filterArea" class="w-full flex flex-col md:flex-row justify-between items-center border-t border-b border-slate-900 py-6 px-4 mb-8 hidden animate-fade-in">
+                <div class="flex flex-wrap items-center gap-3">
+                    <span class="text-xs text-slate-500 uppercase tracking-widest font-mono">Filter Suitability:</span>
+                    <div class="flex bg-slate-950/80 p-1 border border-slate-800 rounded-full">
+                        <button onclick="setGenderFilter('')" id="genderBtn-all" class="px-4 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider transition-all bg-amber-500 text-slate-950 shadow-md">All</button>
+                        <button onclick="setGenderFilter('women')" id="genderBtn-women" class="px-4 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider transition-all text-slate-400 hover:text-slate-200">For Women</button>
+                        <button onclick="setGenderFilter('men')" id="genderBtn-men" class="px-4 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider transition-all text-slate-400 hover:text-slate-200">For Men</button>
+                        <button onclick="setGenderFilter('unisex')" id="genderBtn-unisex" class="px-4 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider transition-all text-slate-400 hover:text-slate-200">Unisex</button>
+                    </div>
+                </div>
+                <div class="text-xs text-slate-500 mt-4 md:mt-0 font-mono" id="resultsCount">
+                    Showing 5 Recommendations
+                </div>
+            </section>
+
+            <!-- Loader -->
+            <div id="loader" class="hidden flex flex-col items-center justify-center py-20 space-y-4">
+                <div class="relative w-16 h-16">
+                    <div class="absolute inset-0 rounded-full border-t-2 border-r-2 border-amber-500 animate-spin"></div>
+                    <div class="absolute inset-2 rounded-full border-b-2 border-l-2 border-amber-500/40 animate-spin" style="animation-duration: 1.5s; animation-direction: reverse;"></div>
+                </div>
+                <p class="text-xs text-amber-500 font-mono uppercase tracking-[0.2em] animate-pulse">Calculating scent formulas...</p>
+            </div>
+
+            <!-- Recommendations Grid -->
+            <section id="resultsArea" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full px-4 hidden">
+                <!-- Dynamic cards populated here -->
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-6xl px-6 py-8 border-t border-slate-950 flex flex-col md:flex-row justify-between items-center text-xs text-slate-600 mt-auto z-10">
+        <p>&copy; 2026 Alchemist. Crafted with advanced molecular scent mapping.</p>
+        <p class="mt-2 md:mt-0 font-mono">Obsidian Lab System Active</p>
+    </footer>
+
+    <!-- Details Expansion Modal -->
+    <div id="detailsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden transition-all duration-300 opacity-0 scale-95">
+        <div class="glass-card w-full max-w-2xl rounded-3xl overflow-hidden relative border border-amber-500/20 shadow-2xl flex flex-col max-h-[90vh]">
+            
+            <!-- Modal Header / Background Glow -->
+            <div class="absolute -right-32 -top-32 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <!-- Modal Close button -->
+            <button onclick="closeModal()" class="absolute top-4 right-4 z-50 bg-slate-900/60 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-500/30 text-slate-400 hover:text-slate-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors focus:outline-none">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
+
+            <!-- Scrollable content -->
+            <div class="overflow-y-auto p-6 md:p-8 space-y-6 flex-1">
+                
+                <div class="flex flex-col md:flex-row items-center md:items-start md:space-x-8">
+                    <!-- Large Bottle Photo with fallback -->
+                    <div class="w-40 h-40 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0 shadow-2xl shadow-black/80 overflow-hidden relative mb-6 md:mb-0">
+                        <img 
+                            id="modalImage" 
+                            src="" 
+                            alt="" 
+                            class="w-full h-full object-contain bg-white p-2"
+                            onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');"
+                        >
+                        <div id="modalGradientFallback" class="hidden w-full h-full bg-gradient-to-br flex items-center justify-center shrink-0">
+                            <span class="text-6xl" id="modalEmojiFallback">🧪</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 min-w-0 text-center md:text-left space-y-3">
+                        <div class="flex items-center justify-center md:justify-start space-x-3">
+                            <span id="modalBrand" class="text-xs text-amber-500 font-bold uppercase tracking-[0.25em]"></span>
+                            <span id="modalGenderBadge"></span>
+                            <span id="modalMatchBadge" class="hidden text-[10px] bg-amber-500/10 border border-amber-500/25 text-amber-400 font-mono font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"></span>
+                        </div>
+                        <h2 id="modalName" class="text-3xl md:text-4xl font-bold text-slate-100 tracking-tight leading-none leading-tight"></h2>
+                        <p id="modalPerfumer" class="text-xs text-slate-500 italic"></p>
+                        
+                        <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 text-xs text-slate-400 font-mono">
+                            <span id="modalRating" class="text-amber-400 font-semibold"></span>
+                            <span class="text-slate-700">|</span>
+                            <span id="modalReviews"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accords / Scent Comparison Section -->
+                <div id="modalAccordsSection" class="border-t border-slate-900 pt-6 space-y-4 hidden">
+                    <span id="modalAccordsTitle" class="text-xs font-mono uppercase tracking-widest text-slate-500 block">Scent Analysis & Accords</span>
+                    <div id="modalAccordsList" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <!-- Scent Profile Similarity Chart -->
+                <div id="modalChartSection" class="border-t border-slate-900 pt-6 space-y-4 hidden">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-mono uppercase tracking-widest text-slate-500 block">Molecular Accord Similarity Graph</span>
+                        <span id="modalChartOverallScore" class="text-xs font-mono text-amber-400 font-bold bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">Accord Compatibility</span>
+                    </div>
+                    <div id="modalChartBars" class="space-y-3.5 pt-2"></div>
+                </div>
+
+                <!-- Description / Accords text -->
+                <div class="border-t border-slate-900 pt-6 space-y-4">
+                    <span class="text-xs font-mono uppercase tracking-widest text-slate-500 block">Scent Profile & Description</span>
+                    <p id="modalDescription" class="text-sm text-slate-300 font-light leading-relaxed"></p>
+                </div>
+            </div>
+
+            <!-- Footer / Actions -->
+            <div class="border-t border-slate-900 px-6 md:px-8 py-5 bg-slate-950/80 flex flex-col sm:flex-row gap-3 z-10">
+                <button 
+                    id="modalRecommendBtn"
+                    class="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3 rounded-xl transition-all tracking-wider text-xs uppercase shadow-lg shadow-amber-500/10 active:scale-95"
+                >
+                    Show Recommendations For This Scent
+                </button>
+                <a 
+                    id="modalPageLink" 
+                    target="_blank"
+                    class="sm:w-auto px-6 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/30 rounded-xl transition-colors text-slate-300 hover:text-amber-300 text-center font-mono text-xs uppercase tracking-wider flex items-center justify-center space-x-2"
+                >
+                    <span>View Fragrantica</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                </a>
+            </div>
         </div>
-        <p id="status" class="text-center text-slate-500 mt-4 text-sm min-h-[20px]"></p>
     </div>
 
-    <div id="resultsArea" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl px-6 mt-16 mb-20 hidden">
-        </div>
-
+    <!-- Main Application Scripts -->
     <script>
-        
-        async function getRecommendations() {
-            const input = document.getElementById('perfumeInput').value;
-            const status = document.getElementById('status');
-            const resultsArea = document.getElementById('resultsArea');
+        let currentSearchQuery = '';
+        let activeGenderFilter = '';
+        let debounceTimeout;
+        let activeRecommendations = [];
+        let activeSeed = null;
 
+        const perfumeInput = document.getElementById('perfumeInput');
+        const suggestionsBox = document.getElementById('suggestions');
+        const status = document.getElementById('status');
+        const resultsArea = document.getElementById('resultsArea');
+        const seedArea = document.getElementById('seedArea');
+        const filterArea = document.getElementById('filterArea');
+        const disambiguationArea = document.getElementById('disambiguationArea');
+        const candidatesList = document.getElementById('candidatesList');
+        const loader = document.getElementById('loader');
+
+        // Setup live suggestions listener
+        perfumeInput.addEventListener('input', () => {
+            clearTimeout(debounceTimeout);
+            const query = perfumeInput.value.trim();
+            if (query.length < 2) {
+                suggestionsBox.classList.add('hidden');
+                return;
+            }
+            debounceTimeout = setTimeout(fetchSuggestions, 300);
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (e.target !== perfumeInput && e.target !== suggestionsBox) {
+                suggestionsBox.classList.add('hidden');
+            }
+        });
+
+        async function fetchSuggestions() {
+            const query = perfumeInput.value.trim();
+            try {
+                const res = await fetch(`/api/suggest?q=${encodeURIComponent(query)}`);
+                const suggestions = await res.json();
+                if (suggestions.length === 0) {
+                    suggestionsBox.classList.add('hidden');
+                    return;
+                }
+                
+                suggestionsBox.innerHTML = suggestions.map(s => {
+                    const cleanGender = s.gender ? s.gender.replace('for ', '') : 'unisex';
+                    return `
+                        <div 
+                            class="px-5 py-3 hover:bg-amber-500/10 cursor-pointer border-b border-slate-900/50 flex justify-between items-center transition-colors group"
+                            onclick="selectSuggestion('${s.name}', '${s.brand}')"
+                        >
+                            <div>
+                                <span class="font-semibold text-slate-200 group-hover:text-amber-300 transition-colors">${s.name}</span>
+                                <span class="text-xs text-amber-500/70 uppercase tracking-widest ml-2">${s.brand}</span>
+                            </div>
+                            <span class="text-[9px] bg-slate-900 border border-slate-800 text-slate-400 px-2 py-0.5 rounded-full uppercase tracking-wider font-mono">${cleanGender}</span>
+                        </div>
+                    `;
+                }).join('');
+                suggestionsBox.classList.remove('hidden');
+            } catch (err) {
+                console.error("Suggestions error:", err);
+            }
+        }
+
+        function selectSuggestion(name, brand) {
+            perfumeInput.value = `${brand} ${name}`;
+            suggestionsBox.classList.add('hidden');
+            getRecommendations();
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') {
+                suggestionsBox.classList.add('hidden');
+                getRecommendations();
+            }
+        }
+
+        function setGenderFilter(gender) {
+            activeGenderFilter = gender;
+            
+            // Highlight active button
+            ['all', 'women', 'men', 'unisex'].forEach(g => {
+                const btn = document.getElementById(`genderBtn-${g}`);
+                if (g === (gender || 'all')) {
+                    btn.className = "px-4 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider transition-all bg-amber-500 text-slate-950 shadow-md";
+                } else {
+                    btn.className = "px-4 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-900/30";
+                }
+            });
+            
+            if (currentSearchQuery) {
+                getRecommendations(true); // Call recommendation with filter update (silent loader)
+            }
+        }
+
+        async function getRecommendations(isFilterChange = false) {
+            const input = perfumeInput.value.trim();
             if (!input) {
-                status.innerText = "Please enter a perfume name.";
+                status.innerHTML = `<span class="text-amber-500/80">Please enter a perfume or ingredient.</span>`;
                 return;
             }
 
-            status.innerText = "...";
-            resultsArea.innerHTML = "";
-            resultsArea.classList.add('hidden');
-
+            currentSearchQuery = input;
+            
+            if (!isFilterChange) {
+                // Completely clear layout if it's a brand new query
+                resultsArea.classList.add('hidden');
+                seedArea.classList.add('hidden');
+                filterArea.classList.add('hidden');
+                disambiguationArea.classList.add('hidden');
+                loader.classList.remove('hidden');
+                status.innerText = "Analyzing notes...";
+            }
+            
             try {
-                const response = await fetch(`/api/recommend?perfume=${encodeURIComponent(input)}`);
+                let url = `/api/recommend?perfume=${encodeURIComponent(input)}`;
+                if (activeGenderFilter) {
+                    url += `&gender=${encodeURIComponent(activeGenderFilter)}`;
+                }
+                
+                const response = await fetch(url);
                 const data = await response.json();
+                
+                loader.classList.add('hidden');
 
                 if (data.error) {
-                    status.innerHTML = `<span class="text-red-400">Error: ${data.error}</span>`;
+                    status.innerHTML = `<span class="text-red-400 font-mono">Error: ${data.error}</span>`;
+                    resultsArea.innerHTML = "";
                     return;
                 }
 
-                status.innerText = `Found  matches for "${data.searched_for}"`;
-                resultsArea.classList.remove('hidden');
+                // Cache active results for the modal expansion
+                activeRecommendations = data.recommendations || [];
+                activeSeed = data.matched_perfume || null;
 
-                data.recommendations.forEach(perfume => {
-                    const googleSearchUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(perfume.name + " " + perfume.brand + " perfume")}`;
+                // Update Status text dynamically based on search profile
+                if (data.search_type === "ingredient") {
+                    status.innerHTML = `Identified raw scent notes matching <span class="text-amber-400">"${input}"</span>`;
+                } else {
+                    status.innerHTML = `Loaded matches for <span class="text-amber-400">"${data.matched_perfume.name}"</span>`;
+                }
 
-                    const card = `
-                        <div class="glass rounded-xl p-4 hover:bg-white/10 transition-all group flex items-start space-x-4 relative overflow-hidden">
+                // Render Disambiguation block if multiple candidates
+                if (data.search_type === "multiple_matches" && data.candidates && data.candidates.length > 1 && !isFilterChange) {
+                    candidatesList.innerHTML = data.candidates.map(c => `
+                        <button 
+                            onclick="selectCandidate('${c.name}', '${c.brand}')"
+                            class="bg-slate-900/60 hover:bg-amber-500/10 border border-slate-800 hover:border-amber-500/30 text-xs px-3.5 py-1.5 rounded-full transition-all text-slate-300 font-light"
+                        >
+                            <span class="font-bold text-amber-500/70 mr-1">${c.brand}</span> ${c.name}
+                        </button>
+                    `).join('');
+                    disambiguationArea.classList.remove('hidden');
+                } else if (!isFilterChange) {
+                    disambiguationArea.classList.add('hidden');
+                }
+
+                // Render Search Seed Card (Search Transparency)
+                if (data.matched_perfume && !isFilterChange) {
+                    const stars = getStarRating(data.matched_perfume.rating);
+                    const genderBadge = getGenderBadge(data.matched_perfume.gender);
+                    
+                    const seedImageUrl = getBottleImageUrl(data.matched_perfume.page_url);
+                    seedArea.innerHTML = `
+                        <div onclick="openSeedModal()" class="glass-card rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center border border-amber-500/20 relative overflow-hidden bg-slate-950/40 cursor-pointer hover:border-amber-500/40 transition-all group">
+                            <div class="absolute -right-16 -top-16 w-48 h-48 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
                             
-                            <div class="w-16 h-16 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center shrink-0">
-                                <span class="text-2xl">🧪</span> 
+                            <!-- Large interactive bottle visualizer -->
+                            <div class="w-24 h-24 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0 mb-6 md:mb-0 md:mr-8 shadow-xl shadow-amber-500/5 overflow-hidden relative">
+                                ${seedImageUrl ? `
+                                <img 
+                                    src="${seedImageUrl}" 
+                                    alt="${data.matched_perfume.name}" 
+                                    class="w-full h-full object-contain bg-white p-1"
+                                    onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');"
+                                >
+                                ` : ''}
+                                <div class="${seedImageUrl ? 'hidden ' : ''}w-full h-full bg-gradient-to-br ${getGenderGradient(data.matched_perfume.gender)} flex items-center justify-center shrink-0">
+                                    <span class="text-4xl animate-pulse">⚗️</span>
+                                </div>
                             </div>
                             
-                            <div class="min-w-0 flex-1 z-10">
-                                <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest mb-1">${perfume.brand}</p>
-                                <h3 class="text-lg font-bold text-slate-100 leading-tight mb-3">${perfume.name}</h3>
+                            <div class="flex-1 min-w-0 text-center md:text-left">
+                                <div class="flex flex-col md:flex-row items-center md:space-x-3 mb-2 justify-center md:justify-start">
+                                    <span class="text-[10px] text-amber-500 font-bold uppercase tracking-[0.25em]">${data.matched_perfume.brand}</span>
+                                    ${genderBadge}
+                                </div>
+                                <h3 class="text-2xl md:text-3xl font-bold text-slate-100 tracking-tight leading-tight mb-2 leading-none">${data.matched_perfume.name}</h3>
+                                ${data.matched_perfume.perfumers ? `<p class="text-xs text-slate-500 mb-2 italic">Nose: ${data.matched_perfume.perfumers}</p>` : ''}
                                 
-                                <a href="${googleSearchUrl}" target="_blank" class="inline-flex items-center space-x-1 text-xs text-slate-400 hover:text-amber-300 transition-colors border-b border-transparent hover:border-amber-300 pb-0.5">
-                                    <span>View Bottle</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3 h-3">
-                                      <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                                    </svg>
-                                </a>
+                                ${data.matched_perfume.accords && data.matched_perfume.accords.length > 0
+                                    ? `<div class="flex flex-wrap justify-center md:justify-start gap-1.5 mt-2 mb-4">` + data.matched_perfume.accords.slice(0, 6).map(a => `<span class="bg-amber-500/10 border border-amber-500/30 text-amber-300 px-2 py-0.5 rounded text-[9px] uppercase font-mono tracking-wide">${a}</span>`).join('') + `</div>`
+                                    : ''}
+                                
+                                <div class="flex flex-wrap items-center justify-center md:justify-start gap-2.5 text-xs text-slate-400 font-mono">
+                                    <span class="text-amber-400 font-semibold">${stars} ${data.matched_perfume.rating.toFixed(1)}</span>
+                                    <span class="text-slate-600">|</span>
+                                    <span>${data.matched_perfume.reviews.toLocaleString()} reviews</span>
+                                    <span class="text-slate-600">|</span>
+                                    <span class="text-slate-500 font-bold">MATCH SEED</span>
+                                </div>
                             </div>
-
-                            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-amber-500/10 rounded-full blur-xl group-hover:bg-amber-500/20 transition-all"></div>
                         </div>
                     `;
-                    resultsArea.innerHTML += card;
-                });
+                    seedArea.classList.remove('hidden');
+                } else if (!data.matched_perfume) {
+                    seedArea.classList.add('hidden');
+                }
+
+                // Show Filter Area
+                filterArea.classList.remove('hidden');
+                document.getElementById('resultsCount').innerText = `${data.recommendations.length} Matches Found`;
+
+                // Render Recommendations Grid
+                if (data.recommendations.length === 0) {
+                    resultsArea.innerHTML = `
+                        <div class="col-span-full py-16 text-center text-slate-500 font-mono border border-dashed border-slate-800 rounded-2xl">
+                            No recommendations found matching the current filters.
+                        </div>
+                    `;
+                } else {
+                    resultsArea.innerHTML = data.recommendations.map((perfume, index) => {
+                        const googleSearchUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(perfume.name + " " + perfume.brand + " perfume bottle")}`;
+                        const matchPercentage = Math.round(perfume.similarity * 100);
+                        const stars = getStarRating(perfume.rating);
+                        
+                        const perfumeImageUrl = getBottleImageUrl(perfume.page_url);
+                        return `
+                            <article onclick="openModal(${index})" class="glass-card rounded-2xl p-5 hover:bg-slate-900/40 relative overflow-hidden flex flex-col h-full animate-fade-in cursor-pointer hover:border-amber-500/40 transition-all group" style="animation-delay: ${index * 70}ms">
+                                
+                                <!-- Glow badge with similarity match -->
+                                <div class="absolute top-4 right-4 bg-amber-500/10 border border-amber-500/25 text-amber-400 font-mono text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-lg shadow-amber-500/5">
+                                    ${matchPercentage}% Match
+                                </div>
+
+                                <div class="flex items-start space-x-4 mb-4 mt-2">
+                                    <!-- Dynamic gradient bottle based on gender suitability -->
+                                    <div class="w-14 h-14 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0 shadow-lg shadow-black/40 overflow-hidden relative">
+                                        ${perfumeImageUrl ? `
+                                        <img 
+                                            src="${perfumeImageUrl}" 
+                                            alt="${perfume.name}" 
+                                            class="w-full h-full object-contain bg-white p-1"
+                                            onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');"
+                                        >
+                                        ` : ''}
+                                        <div class="${perfumeImageUrl ? 'hidden ' : ''}w-full h-full bg-gradient-to-br ${getGenderGradient(perfume.gender)} flex items-center justify-center shrink-0">
+                                            <span class="text-2xl">🧪</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-[10px] text-amber-500 font-bold uppercase tracking-[0.2em] mb-0.5">${perfume.brand}</p>
+                                        <h4 class="text-lg font-bold text-slate-100 leading-snug mb-1 truncate">${perfume.name}</h4>
+                                        <div class="flex items-center space-x-2 text-[11px] text-slate-400">
+                                            <span>${getGenderLabel(perfume.gender)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Middle notes / perfumer -->
+                                <div class="text-xs text-slate-400 font-light mb-4 flex-1 space-y-2">
+                                    ${perfume.perfumers ? `<p class="line-clamp-2"><span class="text-[10px] text-slate-500 uppercase font-mono block">Nose/Creator</span> <span class="italic text-slate-300 font-normal">${perfume.perfumers}</span></p>` : ''}
+                                </div>
+
+                                <!-- Dynamic Scent Accords Comparison -->
+                                <div class="mb-5 space-y-2">
+                                    ${(perfume.shared_accords && perfume.shared_accords.length > 0) || (perfume.unique_accords && perfume.unique_accords.length > 0) ? `
+                                    <div class="flex flex-wrap gap-1">
+                                        ${perfume.shared_accords.slice(0, 3).map(a => `<span class="bg-amber-500/10 border border-amber-500/25 text-amber-300 px-2 py-0.5 rounded text-[9px] uppercase font-mono tracking-wide">Sim: ${a}</span>`).join('')}
+                                        ${perfume.unique_accords.slice(0, 3).map(a => `<span class="bg-slate-900 border border-slate-800 text-slate-400 px-2 py-0.5 rounded text-[9px] uppercase font-mono tracking-wide">${a}</span>`).join('')}
+                                    </div>
+                                    ` : ''}
+                                </div>
+
+                                <!-- Card Footer -->
+                                <div class="border-t border-slate-900 pt-4 flex justify-between items-center mt-auto font-mono text-[11px]">
+                                    <div class="flex flex-col">
+                                        <div class="flex items-center text-amber-400 font-bold">
+                                            <span>${stars}</span>
+                                            <span class="ml-1 text-xs">${perfume.rating.toFixed(1)}</span>
+                                        </div>
+                                        <span class="text-[9px] text-slate-500 mt-0.5">${perfume.reviews.toLocaleString()} reviews</span>
+                                    </div>
+                                    
+                                    <div class="flex space-x-2.5" onclick="event.stopPropagation()">
+                                        <a href="${perfume.page_url}" target="_blank" class="inline-flex items-center text-slate-400 hover:text-amber-400 transition-colors py-1">
+                                            <span>Page</span>
+                                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                        </a>
+                                        <a href="${googleSearchUrl}" target="_blank" class="inline-flex items-center bg-amber-500/5 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-slate-800 hover:border-amber-500/40 px-3 py-1 rounded-full transition-all">
+                                            <span>View Bottle</span>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="absolute -right-6 -bottom-6 w-16 h-16 bg-amber-500/5 rounded-full blur-xl group-hover:bg-amber-500/10 transition-all pointer-events-none"></div>
+                            </article>
+                        `;
+                    }).join('');
+                }
+                
+                resultsArea.classList.remove('hidden');
 
             } catch (error) {
+                loader.classList.add('hidden');
                 console.error(error);
-                status.innerText = "Server Error.";
+                status.innerHTML = `<span class="text-red-400 font-mono">Server Connection Error.</span>`;
             }
         }
-        function handleEnter(e) {
-            if (e.key === 'Enter') getRecommendations();
+
+        function selectCandidate(name, brand) {
+            perfumeInput.value = `${brand} ${name}`;
+            getRecommendations();
         }
+
+        // Helpers
+        function getStarRating(rating) {
+            if (!rating || rating <= 0) return '☆☆☆☆☆';
+            const fullStars = Math.round(rating);
+            return '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
+        }
+
+        function getGenderGradient(gender) {
+            if (!gender) return 'from-slate-500/10 to-slate-700/10 border-slate-700/30';
+            const g = gender.lower ? gender.lower() : gender.toLowerCase();
+            if (g.includes('women and men') || g.includes('unisex')) {
+                return 'from-amber-400/20 to-emerald-600/20 border-amber-500/20 text-amber-300';
+            } else if (g.includes('women')) {
+                return 'from-rose-500/20 to-amber-600/20 border-rose-500/20 text-rose-300';
+            } else if (g.includes('men')) {
+                return 'from-cyan-500/20 to-indigo-600/20 border-cyan-500/20 text-cyan-300';
+            }
+            return 'from-slate-500/10 to-slate-700/10 border-slate-700/30';
+        }
+
+        function getGenderBadge(gender) {
+            if (!gender) return '';
+            const g = gender.toLowerCase();
+            let label = 'Unisex';
+            let classes = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+            
+            if (g.includes('women and men') || g.includes('unisex')) {
+                label = 'Unisex';
+                classes = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+            } else if (g.includes('women')) {
+                label = 'For Her';
+                classes = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+            } else if (g.includes('men')) {
+                label = 'For Him';
+                classes = 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
+            }
+            return `<span class="text-[9px] border px-2 py-0.5 rounded-full uppercase tracking-wider font-mono ${classes}">${label}</span>`;
+        }
+
+        function getGenderLabel(gender) {
+            if (!gender) return 'Unisex suitability';
+            const g = gender.toLowerCase();
+            if (g.includes('women and men') || g.includes('unisex')) return 'Unisex suitability';
+            if (g.includes('women')) return 'Feminine suitability';
+            if (g.includes('men')) return 'Masculine suitability';
+            return 'Unisex suitability';
+        }
+
+        function getBottleImageUrl(pageUrl) {
+            try {
+                if (!pageUrl) return '';
+                // E.g., "https://www.fragrantica.com/perfume/Afnan/9am-70706.html"
+                const cleanUrl = pageUrl.split('.html')[0];
+                const parts = cleanUrl.split('-');
+                const perfumeId = parts[parts.length - 1];
+                if (/^\d+$/.test(perfumeId)) {
+                    return `https://fimgs.net/images/perfume/m.${perfumeId}.jpg`;
+                }
+            } catch (e) {
+                console.error("Error parsing image URL:", e);
+            }
+            return '';
+        }
+
+        // Modal Functionality
+        function openModal(index) {
+            const perfume = activeRecommendations[index];
+            if (!perfume) return;
+            populateAndShowModal(perfume, false);
+        }
+
+        function openSeedModal() {
+            if (!activeSeed) return;
+            populateAndShowModal(activeSeed, true);
+        }
+
+        function populateAndShowModal(perfume, isSeed) {
+            const modal = document.getElementById('detailsModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalGradientFallback = document.getElementById('modalGradientFallback');
+            const modalEmojiFallback = document.getElementById('modalEmojiFallback');
+            
+            // Set text elements
+            document.getElementById('modalBrand').innerText = perfume.brand;
+            document.getElementById('modalName').innerText = perfume.name;
+            document.getElementById('modalPerfumer').innerHTML = perfume.perfumers ? `<span class="text-[10px] text-slate-500 uppercase font-mono block">Nose / Creator</span> <span class="italic text-slate-300 font-normal">${perfume.perfumers}</span>` : '';
+            document.getElementById('modalRating').innerHTML = `${getStarRating(perfume.rating)} ${perfume.rating.toFixed(1)}`;
+            document.getElementById('modalReviews').innerText = `${perfume.reviews.toLocaleString()} reviews`;
+            document.getElementById('modalPageLink').href = perfume.page_url || perfume.page_url;
+            
+            // Set match badge
+            const matchBadge = document.getElementById('modalMatchBadge');
+            if (isSeed) {
+                matchBadge.innerText = "MATCH SEED";
+                matchBadge.classList.remove('hidden');
+            } else if (perfume.similarity !== undefined) {
+                matchBadge.innerText = `${Math.round(perfume.similarity * 100)}% Match`;
+                matchBadge.classList.remove('hidden');
+            } else {
+                matchBadge.classList.add('hidden');
+            }
+            
+            // Set gender badge
+            document.getElementById('modalGenderBadge').innerHTML = getGenderBadge(perfume.gender);
+            
+            // Set description (clean up the repeated accords from TF-IDF notes if possible)
+            let cleanDesc = perfume.notes || '';
+            // If the description begins with raw accords (e.g. "[...] [...] [...]"), let's clean it up!
+            if (cleanDesc.includes('] ')) {
+                const parts = cleanDesc.split('] ');
+                cleanDesc = parts[parts.length - 1]; // Take the main description text!
+            }
+            document.getElementById('modalDescription').innerText = cleanDesc || 'No scent description available for this bottle.';
+
+            // Set dynamic accords / scent comparisons
+            const accordsSection = document.getElementById('modalAccordsSection');
+            const accordsTitle = document.getElementById('modalAccordsTitle');
+            const accordsList = document.getElementById('modalAccordsList');
+            
+            accordsList.innerHTML = '';
+            accordsSection.classList.add('hidden');
+            
+            const chartSection = document.getElementById('modalChartSection');
+            const chartBars = document.getElementById('modalChartBars');
+            const chartOverallScore = document.getElementById('modalChartOverallScore');
+            
+            chartBars.innerHTML = '';
+            chartSection.classList.add('hidden');
+            
+            if (isSeed) {
+                // If it's the seed, display all its dominant accords
+                if (perfume.accords && perfume.accords.length > 0) {
+                    accordsTitle.innerText = "Dominant Scent Accords";
+                    accordsList.innerHTML = perfume.accords.map(a => `
+                        <span class="bg-amber-500/10 border border-amber-500/25 text-amber-300 px-3.5 py-1.5 rounded-full text-xs uppercase font-mono tracking-wider font-medium">
+                            ${a}
+                        </span>
+                    `).join('');
+                    accordsSection.classList.remove('hidden');
+                }
+            } else {
+                // If it's a recommended perfume, show side-by-side comparison to seed accords
+                const sharedHtml = perfume.shared_accords && perfume.shared_accords.length > 0
+                    ? perfume.shared_accords.map(a => `
+                        <span class="bg-amber-500/15 border border-amber-500/40 text-amber-400 px-3.5 py-1.5 rounded-full text-xs uppercase font-mono tracking-wider font-medium flex items-center shadow-sm shadow-amber-500/5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mr-2 animate-pulse"></span> Similar: ${a}
+                        </span>
+                    `).join('')
+                    : '';
+                    
+                const uniqueHtml = perfume.unique_accords && perfume.unique_accords.length > 0
+                    ? perfume.unique_accords.map(a => `
+                        <span class="bg-slate-900 border border-slate-800 text-slate-400 px-3.5 py-1.5 rounded-full text-xs uppercase font-mono tracking-wider font-medium flex items-center">
+                            <span class="w-1.5 h-1.5 rounded-full bg-slate-600 mr-2"></span> Accent: ${a}
+                        </span>
+                    `).join('')
+                    : '';
+                
+                if (sharedHtml || uniqueHtml) {
+                    accordsTitle.innerText = "Scent Accords Comparison (Similar vs Unique)";
+                    accordsList.innerHTML = sharedHtml + uniqueHtml;
+                    accordsSection.classList.remove('hidden');
+                }
+
+                // Construct molecular comparative bar chart
+                if (activeSeed && activeSeed.accords && perfume.accords) {
+                    const seedAccords = activeSeed.accords;
+                    const recAccords = perfume.accords;
+                    const allAccords = Array.from(new Set([...seedAccords, ...recAccords])).slice(0, 5);
+                    
+                    const getIntensity = (accord, list) => {
+                        const idx = list.indexOf(accord);
+                        if (idx === -1) return 0;
+                        return Math.max(0.1, 1.0 - (idx * 0.15));
+                    };
+                    
+                    let totalDiff = 0;
+                    let accordBarsHtml = '';
+                    
+                    allAccords.forEach(accord => {
+                        const seedInt = getIntensity(accord, seedAccords);
+                        const recInt = getIntensity(accord, recAccords);
+                        
+                        const diff = Math.abs(seedInt - recInt);
+                        totalDiff += diff;
+                        const noteMatchPercent = Math.round((1.0 - diff) * 100);
+                        
+                        accordBarsHtml += `
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-xs font-mono">
+                                    <span class="text-slate-300 font-semibold uppercase tracking-wider text-[11px]">${accord}</span>
+                                    <span class="text-slate-500 text-[10px]">${noteMatchPercent}% Note Match</span>
+                                </div>
+                                <div class="space-y-1">
+                                    <!-- Seed Scent Bar (Amber) -->
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-[9px] text-amber-500 font-mono w-16 truncate text-right">${activeSeed.brand.split(' ')[0]}...</span>
+                                        <div class="flex-1 h-1 bg-slate-950 rounded-full overflow-hidden border border-slate-900">
+                                            <div class="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full transition-all duration-[1200ms] shadow-md shadow-amber-500/20" style="width: 0%;" data-width="${seedInt * 100}%"></div>
+                                        </div>
+                                    </div>
+                                    <!-- Recommended Scent Bar (Cyan) -->
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-[9px] text-cyan-400 font-mono w-16 truncate text-right">${perfume.brand.split(' ')[0]}...</span>
+                                        <div class="flex-1 h-1 bg-slate-950 rounded-full overflow-hidden border border-slate-900">
+                                            <div class="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded-full transition-all duration-[1200ms] shadow-md shadow-cyan-500/20" style="width: 0%;" data-width="${recInt * 100}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    const avgDiff = allAccords.length > 0 ? (totalDiff / allAccords.length) : 0;
+                    const overallAccordMatch = Math.round((1.0 - avgDiff) * 100);
+                    
+                    chartOverallScore.innerText = `Accord Compatibility: ${overallAccordMatch}%`;
+                    chartBars.innerHTML = accordBarsHtml;
+                    chartSection.classList.remove('hidden');
+                    
+                    // Trigger transitions
+                    setTimeout(() => {
+                        const bars = chartBars.querySelectorAll('[data-width]');
+                        bars.forEach(b => {
+                            b.style.width = b.getAttribute('data-width');
+                        });
+                    }, 50);
+                }
+            }
+            
+            // Setup bottle image with fallbacks
+            const imageUrl = getBottleImageUrl(perfume.page_url);
+            modalImage.style.display = 'block';
+            modalGradientFallback.classList.add('hidden');
+            if (imageUrl) {
+                modalImage.src = imageUrl;
+                modalImage.alt = perfume.name;
+            } else {
+                modalImage.style.display = 'none';
+                modalGradientFallback.classList.remove('hidden');
+                modalGradientFallback.className = `w-full h-full bg-gradient-to-br ${getGenderGradient(perfume.gender)} flex items-center justify-center shrink-0`;
+                modalEmojiFallback.innerText = isSeed ? '⚗️' : '🧪';
+            }
+            
+            // Configure "Show Recommendations for This Scent" button
+            const recommendBtn = document.getElementById('modalRecommendBtn');
+            recommendBtn.onclick = () => {
+                perfumeInput.value = `${perfume.brand} ${perfume.name}`;
+                closeModal();
+                getRecommendations();
+            };
+            
+            // Display Modal with animation
+            modal.classList.remove('hidden');
+            // Force reflow
+            modal.offsetWidth;
+            modal.classList.add('opacity-100', 'scale-100');
+            modal.classList.remove('opacity-0', 'scale-95');
+            
+            // Disable background scroll
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('detailsModal');
+            modal.classList.remove('opacity-100', 'scale-100');
+            modal.classList.add('opacity-0', 'scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        // Add Close Modal on clicking backdrop or ESC key
+        document.getElementById('detailsModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('detailsModal')) {
+                closeModal();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
     </script>
 </body>
 </html>
