@@ -48,27 +48,28 @@ df['Name_Clean'] = df.apply(clean_name, axis=1)
 # Combine accords (weighted) and description
 df['Notes_Combined'] = (df['Main Accords'].fillna('') + " ") * 3 + df['Description'].fillna('')
 
+print("Building TF-IDF Vector Matrix...")
+vectorizer = TfidfVectorizer(stop_words='english', min_df=2)
+tfidf_matrix = vectorizer.fit_transform(df['Notes_Combined'].fillna(''))
+print(f"TF-IDF matrix shape: {tfidf_matrix.shape}")
+
 # Select final columns including the new rich metadata and main accords!
+# Save 'Description' to keep the CSV file size optimized for serverless deployment
 final_df = df[[
-    'Name_Clean', 'Brand', 'Notes_Combined', 'url', 
+    'Name_Clean', 'Brand', 'Description', 'url', 
     'Gender', 'Rating Value', 'Rating Count', 'Perfumers', 'Main Accords'
 ]]
 final_df.columns = [
-    'Name', 'Brand', 'Notes', 'Page_URL', 
+    'Name', 'Brand', 'Description', 'Page_URL', 
     'Gender', 'Rating_Value', 'Rating_Count', 'Perfumers', 'Main_Accords'
 ]
 
-# Drop rows where Notes combined is empty
-final_df = final_df.dropna(subset=['Notes'])
+# Ensure no NaN descriptions
+final_df['Description'] = final_df['Description'].fillna('')
 
 print("Saving cleaned dataset...")
 final_df.to_csv('data/cleaned_perfumes.csv', index=False, encoding='utf-8')
 print(f"Saved {len(final_df)} cleaned rows.")
-
-print("Building TF-IDF Vector Matrix...")
-vectorizer = TfidfVectorizer(stop_words='english', min_df=2)
-tfidf_matrix = vectorizer.fit_transform(final_df['Notes'].fillna(''))
-print(f"TF-IDF matrix shape: {tfidf_matrix.shape}")
 
 print("Serializing Model Artifacts...")
 os.makedirs('model/serialized', exist_ok=True)

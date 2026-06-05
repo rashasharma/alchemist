@@ -712,14 +712,9 @@
             // Set gender badge
             document.getElementById('modalGenderBadge').innerHTML = getGenderBadge(perfume.gender);
             
-            // Set description (clean up the repeated accords from TF-IDF notes if possible)
-            let cleanDesc = perfume.notes || '';
-            // If the description begins with raw accords (e.g. "[...] [...] [...]"), let's clean it up!
-            if (cleanDesc.includes('] ')) {
-                const parts = cleanDesc.split('] ');
-                cleanDesc = parts[parts.length - 1]; // Take the main description text!
-            }
-            document.getElementById('modalDescription').innerText = cleanDesc || 'No scent description available for this bottle.';
+            // Set description
+            let cleanDesc = perfume.notes || 'No scent description available for this bottle.';
+            document.getElementById('modalDescription').innerText = cleanDesc;
 
             // Set dynamic accords / scent comparisons
             const accordsSection = document.getElementById('modalAccordsSection');

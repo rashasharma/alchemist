@@ -23,6 +23,7 @@ df['Rating_Value'] = pd.to_numeric(df['Rating_Value'], errors='coerce').fillna(0
 df['Rating_Count'] = pd.to_numeric(df['Rating_Count'], errors='coerce').fillna(0)
 df['Perfumers'] = df['Perfumers'].fillna('')
 df['Main_Accords'] = df['Main_Accords'].fillna('')
+df['Description'] = df['Description'].fillna('')
 
 def parse_accords(accord_str):
     try:
@@ -36,15 +37,24 @@ def parse_accords(accord_str):
     except:
         return []
 
-# Load serialized vectorizer and TF-IDF matrix
+# Load serialized vectorizer and TF-IDF matrix with on-the-fly fallback
 vectorizer_path = os.path.join(BASE_DIR, 'serialized', 'vectorizer.pkl')
 matrix_path = os.path.join(BASE_DIR, 'serialized', 'tfidf_matrix.pkl')
 
-print(" Loading pre-computed TF-IDF model artifacts...")
-with open(vectorizer_path, 'rb') as f:
-    vectorizer = pickle.load(f)
-with open(matrix_path, 'rb') as f:
-    tfidf_matrix = pickle.load(f)
+try:
+    print(" Loading pre-computed TF-IDF model artifacts...")
+    with open(vectorizer_path, 'rb') as f:
+        vectorizer = pickle.load(f)
+    with open(matrix_path, 'rb') as f:
+        tfidf_matrix = pickle.load(f)
+except Exception as e:
+    print(f" Warning: Failed to load pre-computed TF-IDF models ({e}). Rebuilding on the fly...")
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    # We rebuild the temporary notes field in a way that matches cleanup.py
+    notes_combined = (df['Main_Accords'].fillna('') + " ") * 3 + df['Description'].fillna('')
+    vectorizer = TfidfVectorizer(stop_words='english', min_df=2)
+    tfidf_matrix = vectorizer.fit_transform(notes_combined.fillna(''))
+    print(" Rebuilding complete!")
 
 # Pre-calculate quality scores for popularity-weighted recommendations
 rating_counts = df['Rating_Count'].values
@@ -144,7 +154,7 @@ def get_recommendations(user_input, top_n=5, gender_filter=None, brand_filter=No
             "gender": matched_row['Gender'],
             "perfumers": matched_row['Perfumers'],
             "page_url": matched_row['Page_URL'],
-            "notes": matched_row['Notes'],
+            "notes": matched_row['Description'],
             "accords": parse_accords(matched_row['Main_Accords'])
         }
         print(f"Matched perfume: {matched_perfume['name']} by {matched_perfume['brand']}")
@@ -239,7 +249,7 @@ def get_recommendations(user_input, top_n=5, gender_filter=None, brand_filter=No
             "reviews": int(row['Rating_Count']),
             "perfumers": row['Perfumers'],
             "similarity": float(cosine_scores[idx]),
-            "notes": row['Notes'],
+            "notes": row['Description'],
             "accords": rec_accords,
             "shared_accords": shared,
             "unique_accords": unique

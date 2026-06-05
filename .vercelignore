@@ -1,0 +1,11 @@
+# Exclude raw data files to reduce deployment bundle size
+raw_perfumes.csv
+data/raw_perfumes.csv
+
+# Exclude local environments and caches
+venv/
+__pycache__/
+.git/
+.github/
+.gemini/
+*.pyc
